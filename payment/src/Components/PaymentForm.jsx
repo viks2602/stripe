@@ -27,8 +27,8 @@ const PaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [confirmpaymentbtn,setconfirmpaymentbtn]=useState(false)
-  const [waitconfirm,setwaitcofirm]=useState(false)
+  const [confirmpaymentbtn, setconfirmpaymentbtn] = useState(false);
+  const [waitconfirm, setwaitcofirm] = useState(false);
 
   const handleSubmit = async (e) => {
     // const cardElement=elements.getElement(CardElement)
@@ -39,43 +39,45 @@ const PaymentForm = () => {
     });
 
     if (!error) {
+      let data = {
+        name: 'package_1',
+        desc: 'description',
+      };
+      let address = {
+        name: 'vikas',
+        address: {
+          line1: '510 Townsend St',
+          postal_code: '98140',
+          city: 'San Francisco',
+          state: 'CA',
+          country: 'US',
+        },
+      };
       try {
         const { id } = paymentMethod;
         const response = await axios.post('http://localhost:4000/payment', {
           amount: 1000,
           id,
+          items: JSON.stringify(data),
         });
 
         console.log(response.data.client_secret, id);
-        localStorage.setItem("secret key",response.data.client_secret) 
-        setconfirmpaymentbtn(true) 
+        localStorage.setItem('secret key', response.data.client_secret);
+        setconfirmpaymentbtn(true);
         if (response && waitconfirm) {
-
-
           console.log('Successful payment', response);
           let status = await stripe.confirmCardPayment(
             `${response.data.client_secret}`,
             {
               payment_method: {
                 card: elements.getElement(CardElement),
-                billing_details: {
-                  name: 'vikas',
-                  address: {
-                    line1: '510 Townsend St',
-                    postal_code: '98140',
-                    city: 'San Francisco',
-                    state: 'CA',
-                    country: 'US',
-                  },
-                },
+                billing_details: address
               },
             }
           );
 
           console.log(status);
           setSuccess(true);
-
-        
         }
       } catch (error) {
         console.log('error', error);
@@ -94,7 +96,9 @@ const PaymentForm = () => {
             </div>
           </fieldset>
           <button>Pay</button>
-          {confirmpaymentbtn? <button onClick={()=>setwaitcofirm(true)}>confirm payment</button> :null}
+          {confirmpaymentbtn ? (
+            <button onClick={() => setwaitcofirm(true)}>confirm payment</button>
+          ) : null}
         </form>
       ) : (
         <div>
